@@ -1,0 +1,411 @@
+\documentclass[UTF8,zihao=false]{ctexart}
+
+% =========================================================
+% 编译方式：XeLaTeX
+% 页面：A4，纵向
+% 上边距 3.7 cm；下边距 3.5 cm；左边距 2.8 cm；右边距 2.6 cm
+% 页眉距纸张上边缘 1.5 cm；页脚距纸张下边缘 1.75 cm
+%
+% 主标题：方正小标宋简体，二号（22 pt），不加粗，固定行距 32 pt
+% 一级标题：黑体，三号（16 pt），不加粗，固定行距 28 pt
+% 二级标题：楷体_GB2312，三号（16 pt），不加粗，固定行距 28 pt
+% 三级标题：仿宋_GB2312，三号（16 pt），加粗，固定行距 28 pt
+% 正文：中文仿宋_GB2312；数字和英文字母 Times New Roman；三号（16 pt），固定行距 28 pt
+% =========================================================
+
+\usepackage[
+  a4paper,
+  top=3.7cm,
+  bottom=3.5cm,
+  left=2.8cm,
+  right=2.6cm
+]{geometry}
+
+\usepackage{fontspec}
+\usepackage{xeCJK}
+
+% 西文字体：正文及标题中的数字、英文字母统一使用 Times New Roman
+% 若系统未安装 Times New Roman，则自动使用 TeX Gyre Termes 作为兼容替代。
+\IfFontExistsTF{Times New Roman}{
+  \setmainfont[
+    Ligatures=TeX
+  ]{Times New Roman}
+}{
+  \setmainfont[
+    Ligatures=TeX
+  ]{TeX Gyre Termes}
+}
+\usepackage{titlesec}
+\usepackage{titletoc} % 自定义公文式目录
+\usepackage{indentfirst} % 标题后的第一段也首行缩进
+\usepackage{eso-pic}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+% ---------- PDF 链接样式 ----------
+\hypersetup{
+  colorlinks=false,
+  pdfborder={0 0 0}
+}
+
+% =========================================================
+% 字体设置
+% 若本机已安装指定字体，则优先使用；
+% 否则自动使用 TeX Live/MiKTeX 自带的 Fandol 字体。
+% =========================================================
+
+% 正文：仿宋_GB2312
+\IfFontExistsTF{仿宋_GB2312}{
+  \newCJKfontfamily\bodyfont[
+    AutoFakeBold=2
+  ]{仿宋_GB2312}
+}{
+  \newCJKfontfamily\bodyfont[
+    AutoFakeBold=2
+  ]{FandolFang-Regular.otf}
+}
+
+% 主标题：方正小标宋简体
+\IfFontExistsTF{方正小标宋简体}{
+  \newCJKfontfamily\maintitlefont{方正小标宋简体}
+}{
+  \IfFontExistsTF{方正小标宋_GBK}{
+    \newCJKfontfamily\maintitlefont{方正小标宋_GBK}
+  }{
+    \newCJKfontfamily\maintitlefont{FandolSong-Regular.otf}
+  }
+}
+
+% 一级标题：黑体
+\IfFontExistsTF{黑体}{
+  \newCJKfontfamily\firsttitlefont{黑体}
+}{
+  \newCJKfontfamily\firsttitlefont{FandolHei-Regular.otf}
+}
+
+% 二级标题：楷体_GB2312
+\IfFontExistsTF{楷体_GB2312}{
+  \newCJKfontfamily\secondtitlefont{楷体_GB2312}
+}{
+  \newCJKfontfamily\secondtitlefont{FandolKai-Regular.otf}
+}
+
+% 三级标题：仿宋_GB2312，并允许伪粗体
+\IfFontExistsTF{仿宋_GB2312}{
+  \newCJKfontfamily\thirdtitlefont[
+    AutoFakeBold=2
+  ]{仿宋_GB2312}
+}{
+  \newCJKfontfamily\thirdtitlefont[
+    AutoFakeBold=2
+  ]{FandolFang-Regular.otf}
+}
+
+
+% 页码：宋体
+\IfFontExistsTF{宋体}{
+  \newCJKfontfamily\pagenumberfont{宋体}
+}{
+  \IfFontExistsTF{SimSun}{
+    \newCJKfontfamily\pagenumberfont{SimSun}
+  }{
+    \newCJKfontfamily\pagenumberfont{FandolSong-Regular.otf}
+  }
+}
+
+% =========================================================
+% 正文字号、固定行距、段落格式
+% =========================================================
+
+% 三号字按 16 pt 设置，固定行距 28 pt
+\renewcommand{\normalsize}{\fontsize{16pt}{28pt}\selectfont}
+\AtBeginDocument{\bodyfont\normalsize}
+
+% 正文首行缩进两个汉字，段前段后为 0
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+
+% 避免段落首尾出现单行
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+
+% =========================================================
+% 主标题
+% 用法：\maintitle{主标题}
+% =========================================================
+
+\newcommand{\maintitle}[1]{%
+  \begin{center}
+    {\maintitlefont\mdseries\fontsize{22pt}{32pt}\selectfont #1}
+  \end{center}
+  \vspace{16pt}
+}
+
+% =========================================================
+% 标题编号与标题格式
+%
+% \section      → 一、一级标题
+% \subsection   → （一）二级标题
+% \subsubsection→ 1. 三级标题
+% =========================================================
+
+\renewcommand{\thesection}{\chinese{section}}
+\renewcommand{\thesubsection}{\chinese{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{subsubsection}}
+
+% 一级标题：黑体、三号、不加粗、28 pt 行距
+\titleformat{\section}[hang]
+  {\firsttitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
+  {\thesection、}
+  {0pt}
+  {}
+
+% 二级标题：楷体_GB2312、三号、不加粗、28 pt 行距
+\titleformat{\subsection}[hang]
+  {\secondtitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
+  {（\thesubsection）}
+  {0pt}
+  {}
+
+% 三级标题：仿宋_GB2312、三号、加粗、28 pt 行距
+\titleformat{\subsubsection}[hang]
+  {\thirdtitlefont\bfseries\fontsize{16pt}{28pt}\selectfont}
+  {\thesubsubsection.}
+  {0.5em}
+  {}
+
+% 标题前后不额外增加段间距，保持 28 pt 行距网格
+\titlespacing{\section}{0pt}{0pt}{0pt}
+\titlespacing{\subsection}{0pt}{0pt}{0pt}
+\titlespacing{\subsubsection}{0pt}{0pt}{0pt}
+
+% =========================================================
+% 页眉和页脚
+%
+% 默认状态：
+%   页眉为空；
+%   自动显示页码；
+%   奇数页页码位于正文版心右侧；
+%   偶数页页码位于正文版心左侧；
+%   页码格式为“— 1 —”“— 2 —”“— 3 —”；
+%   页码字体为宋体，字号为四号（14 pt）。
+%
+% 自定义命令：
+%   \SetHeader{页眉内容}                 % 添加或修改页眉
+%   \ClearHeader                         % 清空页眉
+%   \SetPageNumberFormat{第\thepage 页}  % 修改页码格式
+%   \HidePageNumber                      % 隐藏页码
+%   \ShowPageNumber                      % 恢复页码
+%
+% 页眉基线距纸张上边缘 1.5 cm；
+% 页码基线距纸张下边缘 1.75 cm。
+% =========================================================
+
+% 关闭 ctexart/LaTeX 自带的页眉页脚，由本模板统一绘制
+\pagestyle{empty}
+
+% 页眉默认留空
+\newcommand{\HeaderText}{}
+\newcommand{\SetHeader}[1]{\renewcommand{\HeaderText}{#1}}
+\newcommand{\ClearHeader}{\renewcommand{\HeaderText}{}}
+
+% 页码默认开启，格式为“— 1 —”
+\newif\ifshowpagenumber
+\showpagenumbertrue
+\newcommand{\PageNumberText}{\mbox{—\hspace{0.5em}\thepage\hspace{0.5em}—}}
+\newcommand{\SetPageNumberFormat}[1]{\renewcommand{\PageNumberText}{#1}}
+\newcommand{\HidePageNumber}{\showpagenumberfalse}
+\newcommand{\ShowPageNumber}{\showpagenumbertrue}
+
+\AddToShipoutPictureFG{%
+  % 自定义页眉：默认为空
+  \AtPageUpperLeft{%
+    \put(
+      \LenToUnit{0.5\paperwidth},
+      -\LenToUnit{1.5cm}
+    ){%
+      \makebox(0,0)[c]{%
+        \fontsize{10.5pt}{12pt}\selectfont\HeaderText
+      }%
+    }%
+  }%
+  % 页码：奇数页右对齐，偶数页左对齐
+  \AtPageLowerLeft{%
+    \ifshowpagenumber
+      \ifodd\value{page}
+        \put(
+          \LenToUnit{2.8cm},
+          \LenToUnit{1.75cm}
+        ){%
+          \makebox(\LenToUnit{\textwidth},0)[r]{%
+            \pagenumberfont\fontsize{14pt}{14pt}\selectfont
+            \PageNumberText
+          }%
+        }%
+      \else
+        \put(
+          \LenToUnit{2.8cm},
+          \LenToUnit{1.75cm}
+        ){%
+          \makebox(\LenToUnit{\textwidth},0)[l]{%
+            \pagenumberfont\fontsize{14pt}{14pt}\selectfont
+            \PageNumberText
+          }%
+        }%
+      \fi
+    \fi
+  }%
+}
+
+% =========================================================
+% 可选公文式目录
+%
+% 使用方法：
+%   在 \begin{document} 后、正文主标题前加入：
+%       \MakeOfficialTOC
+%
+% 若不加入该命令，则不会生成目录。
+%
+% 目录页规则：
+%   1. 目录位于本文件第一页；
+%   2. 目录页不显示页码，也不计入正文页码；
+%   3. 正文首页重新从“— 1 —”开始编号；
+%   4. 目录列出一级、二级和三级标题；
+%   5. 新增或修改标题后，需要编译两次，或直接使用 latexmk。
+% =========================================================
+
+% 目录标题：方正小标宋简体、二号、32 pt 行距、居中
+\newcommand{\OfficialTOCTitle}{%
+  \begin{center}
+    {\maintitlefont\mdseries\fontsize{22pt}{32pt}\selectfont
+      目\hspace{1em}录}
+  \end{center}
+  \vspace{16pt}
+}
+
+% 目录最多显示三级标题
+\setcounter{tocdepth}{3}
+
+% 一级目录：黑体、三号，顶格
+\titlecontents{section}
+  [0pt]
+  {\firsttitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
+  {\contentslabel[\thecontentslabel、]{2.5em}}
+  {}
+  {\bodyfont\mdseries\titlerule*[0.5pc]{.}\contentspage}
+
+% 二级目录：楷体_GB2312、三号，缩进两个汉字
+\titlecontents{subsection}
+  [2em]
+  {\secondtitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
+  {\contentslabel[（\thecontentslabel）]{3.5em}}
+  {}
+  {\bodyfont\mdseries\titlerule*[0.5pc]{.}\contentspage}
+
+% 三级目录：仿宋_GB2312、三号，缩进四个汉字
+\titlecontents{subsubsection}
+  [4em]
+  {\bodyfont\mdseries\fontsize{16pt}{28pt}\selectfont}
+  {\contentslabel[\thecontentslabel.]{2.5em}}
+  {}
+  {\bodyfont\mdseries\titlerule*[0.5pc]{.}\contentspage}
+
+\makeatletter
+\newcommand{\MakeOfficialTOC}{%
+  \clearpage
+  \begingroup
+    % 目录页临时取消页眉和页码；正文设置不受影响
+    \renewcommand{\HeaderText}{}%
+    \HidePageNumber
+    \pagenumbering{gobble}%
+    \thispagestyle{empty}%
+    \OfficialTOCTitle
+    \@starttoc{toc}%
+    \clearpage
+  \endgroup
+  % 正文从第 1 页重新开始
+  \pagenumbering{arabic}%
+  \setcounter{page}{1}%
+}
+\makeatother
+
+% =========================================================
+% 列表、图片、表格的常用设置
+% =========================================================
+
+\setlist[itemize]{
+  leftmargin=2em,
+  itemsep=0pt,
+  topsep=0pt,
+  parsep=0pt
+}
+
+\setlist[enumerate]{
+  leftmargin=2em,
+  itemsep=0pt,
+  topsep=0pt,
+  parsep=0pt
+}
+
+% 图片默认最大宽度为正文宽度
+\setkeys{Gin}{width=\linewidth,keepaspectratio}
+
+% =========================================================
+% 正文开始
+% =========================================================
+
+\begin{document}
+
+% 可选目录：取消下一行开头的百分号，即可在正文前生成公文式目录。
+% 不需要目录时，保持该行注释即可。
+ \MakeOfficialTOC
+
+% 默认：无页眉；页码自动显示为“— 1 —”“— 2 —”……
+% 奇数页页码位于正文版心右侧，偶数页位于正文版心左侧。
+%
+% 需要页眉时取消注释：
+% \SetHeader{这里填写页眉内容}
+%
+% 修改页码格式示例：
+% \SetPageNumberFormat{第\thepage 页}
+%
+% 临时隐藏或恢复页码：
+% \HidePageNumber
+% \ShowPageNumber
+
+
+\maintitle{主标题}
+
+\section{一级标题}
+
+正文中文采用仿宋\_GB2312，数字和英文字母采用 Times New Roman，三号字，不加粗，固定行距为 28 磅。
+包括各级标题后的第一段在内，正文均默认首行缩进两个汉字。较长的正文会在 A4 版心范围内自动换行，
+不会越过右侧页边距。
+
+\subsection{二级标题}
+
+正文内容。
+
+\subsubsection{三级标题}
+
+正文内容。
+
+% 强制分页
+\newpage
+
+\section{第二页标题}
+
+正文内容。该页为偶数页，页码位于正文版心左侧。
+
+\newpage
+
+\section{第三页标题}
+
+正文内容。该页为奇数页，页码位于正文版心右侧。
+
+\end{document}
