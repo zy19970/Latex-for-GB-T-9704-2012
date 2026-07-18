@@ -1,411 +1,525 @@
-\documentclass[UTF8,zihao=false]{ctexart}
-
-% =========================================================
-% 编译方式：XeLaTeX
-% 页面：A4，纵向
-% 上边距 3.7 cm；下边距 3.5 cm；左边距 2.8 cm；右边距 2.6 cm
-% 页眉距纸张上边缘 1.5 cm；页脚距纸张下边缘 1.75 cm
+% !TeX program = xelatex
+% !TeX encoding = UTF-8
+% ======================================================================
+% GB/T 9704—2012《党政机关公文格式》XeLaTeX 模板（v6）
+% 编译方式：XeLaTeX，建议连续编译两次（使用目录时必须至少两次）。
 %
-% 主标题：方正小标宋简体，二号（22 pt），不加粗，固定行距 32 pt
-% 一级标题：黑体，三号（16 pt），不加粗，固定行距 28 pt
-% 二级标题：楷体_GB2312，三号（16 pt），不加粗，固定行距 28 pt
-% 三级标题：仿宋_GB2312，三号（16 pt），加粗，固定行距 28 pt
-% 正文：中文仿宋_GB2312；数字和英文字母 Times New Roman；三号（16 pt），固定行距 28 pt
-% =========================================================
+% 默认版式：
+%   1. A4 纸；版心 156 mm × 225 mm；上 37 mm、下 35 mm、左 28 mm、右 26 mm；
+%   2. 正文三号仿宋，数字与西文字母使用 Times New Roman；
+%   3. 正文首行缩进 2 字符，按约 22 行 × 28 字设置；
+%   4. 页眉为空；页码为“— 1 —”，宋体四号；距版心下边缘约 7 mm，奇数页右、偶数页左；
+%   5. 份号、密级和保密期限、紧急程度均使用三号黑体，顶格依次编排在版心左上角；
+%   6. 版头为可选功能：仅调用 \MakeOfficialFrontMatter 时生成；
+%      公文标题和主送机关由 \MakeOfficialTitleBlock 独立生成，可始终保留；
+%   7. 目录为可选功能：仅在正文中调用 \MakeOfficialTOC 时生成；
+%      目录页不显示页码且不计入正文页码，正文从“— 1 —”开始。
+%
+% 字体说明：
+%   模板优先调用 Windows 常用公文字体：
+%   方正小标宋简体、仿宋_GB2312、黑体、楷体_GB2312、宋体、Times New Roman。
+%   若本机未安装，将自动回退至可用的开源字体，以保证模板能够编译。
+% ======================================================================
 
-\usepackage[
-  a4paper,
-  top=3.7cm,
-  bottom=3.5cm,
-  left=2.8cm,
-  right=2.6cm
-]{geometry}
+\documentclass[UTF8,a4paper,twoside,fontset=none]{ctexart}
 
+% ----------------------------------------------------------------------
+% 基础宏包
+% ----------------------------------------------------------------------
 \usepackage{fontspec}
 \usepackage{xeCJK}
-
-% 西文字体：正文及标题中的数字、英文字母统一使用 Times New Roman
-% 若系统未安装 Times New Roman，则自动使用 TeX Gyre Termes 作为兼容替代。
-\IfFontExistsTF{Times New Roman}{
-  \setmainfont[
-    Ligatures=TeX
-  ]{Times New Roman}
-}{
-  \setmainfont[
-    Ligatures=TeX
-  ]{TeX Gyre Termes}
-}
+\usepackage[
+  paperwidth=210mm,
+  paperheight=297mm,
+  top=37mm,
+  bottom=35mm,
+  left=28mm,
+  right=26mm,
+  headheight=0pt,
+  headsep=0pt,
+  % 页码一字线上缘位于版心下边缘下方约 7 mm
+  footskip=7mm
+]{geometry}
+\usepackage{fancyhdr}
 \usepackage{titlesec}
-\usepackage{titletoc} % 自定义公文式目录
-\usepackage{indentfirst} % 标题后的第一段也首行缩进
-\usepackage{eso-pic}
-\usepackage{graphicx}
+\usepackage{titletoc}
+\usepackage{zhnumber}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\usepackage{xparse}
 \usepackage{array}
-\usepackage{longtable}
-\usepackage{booktabs}
-\usepackage{enumitem}
-\usepackage{hyperref}
+\usepackage{calc}
 
-% ---------- PDF 链接样式 ----------
-\hypersetup{
-  colorlinks=false,
-  pdfborder={0 0 0}
+% ----------------------------------------------------------------------
+% 字体设置：优先使用 Windows 公文字体，缺失时自动回退
+% ----------------------------------------------------------------------
+
+% 西文、数字：Times New Roman；缺失时回退至 Tinos
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{Tinos}}
+
+% 仅检测一次仿宋字体，以避免在非 Windows 系统中反复检索缺失字体。
+\newif\ifOfficialWindowsFonts
+\IfFontExistsTF{FangSong_GB2312}
+  {\OfficialWindowsFontstrue}
+  {\OfficialWindowsFontsfalse}
+
+\ifOfficialWindowsFonts
+  % Windows 常用公文字体
+  \setCJKmainfont{FangSong_GB2312}
+  \setCJKfamilyfont{officialfangsong}{FangSong_GB2312}
+  \setCJKfamilyfont{officialsong}{SimSun}
+  \setCJKfamilyfont{officialhei}{SimHei}
+  \setCJKfamilyfont{officialkai}{KaiTi_GB2312}
+  \IfFontExistsTF{FZXiaoBiaoSong-B05S}
+    {\setCJKfamilyfont{officialxiaobiaosong}{FZXiaoBiaoSong-B05S}}
+    {\IfFontExistsTF{方正小标宋简体}
+      {\setCJKfamilyfont{officialxiaobiaosong}{方正小标宋简体}}
+      {\setCJKfamilyfont{officialxiaobiaosong}{STZhongsong}}}
+\else
+  % 跨平台开源字体回退，用于保证 Linux/macOS 环境可编译
+  \setCJKmainfont{Noto Serif CJK SC}
+  \setCJKfamilyfont{officialfangsong}{Noto Serif CJK SC}
+  \setCJKfamilyfont{officialsong}{Noto Serif CJK SC}
+  \setCJKfamilyfont{officialhei}{Noto Sans CJK SC}
+  \setCJKfamilyfont{officialkai}{Noto Serif CJK SC}
+  \setCJKfamilyfont{officialxiaobiaosong}{Noto Serif CJK SC}
+\fi
+
+\newcommand{\SmallSongFont}{\CJKfamily{officialxiaobiaosong}}
+\newcommand{\SongFont}{\CJKfamily{officialsong}}
+\newcommand{\HeiFont}{\CJKfamily{officialhei}}
+\newcommand{\KaiFont}{\CJKfamily{officialkai}}
+\newcommand{\FangSongFont}{\CJKfamily{officialfangsong}}
+
+% 专门控制阿拉伯数字和符号所用的西文字体。
+% XeLaTeX 中 \CJKfamily 只切换汉字字体，不会改变数字字体；
+% 因此份号、保密期限数字和页码必须额外切换对应的黑体/宋体西文字形。
+\ifOfficialWindowsFonts
+  \newfontfamily\OfficialHeiLatin{SimHei}
+  \newfontfamily\OfficialSongLatin{SimSun}
+  \IfFontExistsTF{Segoe UI Symbol}
+    {\newfontfamily\OfficialSymbolFont{Segoe UI Symbol}}
+    {\newfontfamily\OfficialSymbolFont{SimHei}}
+\else
+  \newfontfamily\OfficialHeiLatin{Noto Sans CJK SC}
+  \newfontfamily\OfficialSongLatin{Noto Serif CJK SC}
+  \IfFontExistsTF{DejaVu Sans}
+    {\newfontfamily\OfficialSymbolFont{DejaVu Sans}}
+    {\newfontfamily\OfficialSymbolFont{Noto Sans Symbols 2}}
+\fi
+
+% 密级与保密期限之间的黑色实心五角星。
+\newcommand{\OfficialSecretStar}{{\OfficialSymbolFont\char"2605}}
+
+% ----------------------------------------------------------------------
+% 字号与正文网格
+% ----------------------------------------------------------------------
+\newcommand{\OfficialBodyFont}{\FangSongFont\fontsize{16bp}{28.8bp}\selectfont}
+\newcommand{\OfficialTitleFont}{\SmallSongFont\fontsize{22bp}{35bp}\selectfont}
+\newcommand{\OfficialMarkFont}{\SmallSongFont\fontsize{54bp}{60bp}\selectfont}
+\newcommand{\OfficialThreeFont}{\fontsize{16bp}{28.8bp}\selectfont}
+\newcommand{\OfficialFourFont}{\fontsize{14bp}{20bp}\selectfont}
+% 份号、密级和保密期限、紧急程度：三号黑体，行距仍按正文网格设置。
+\newcommand{\OfficialTopElementFont}{%
+  \OfficialHeiLatin\HeiFont\fontsize{16bp}{28.8bp}\selectfont}
+
+\AtBeginDocument{%
+  \OfficialBodyFont
+  \setlength{\parindent}{2em}%
+  \setlength{\parskip}{0pt}%
+  \setlength{\topskip}{16bp}%
+  \raggedbottom
 }
 
-% =========================================================
-% 字体设置
-% 若本机已安装指定字体，则优先使用；
-% 否则自动使用 TeX Live/MiKTeX 自带的 Fandol 字体。
-% =========================================================
-
-% 正文：仿宋_GB2312
-\IfFontExistsTF{仿宋_GB2312}{
-  \newCJKfontfamily\bodyfont[
-    AutoFakeBold=2
-  ]{仿宋_GB2312}
-}{
-  \newCJKfontfamily\bodyfont[
-    AutoFakeBold=2
-  ]{FandolFang-Regular.otf}
+% 中文标点压缩与换行设置
+\xeCJKsetup{
+  CJKecglue=\hskip 0pt plus 0.08\baselineskip,
+  CheckSingle=true,
+  PunctStyle=quanjiao
 }
 
-% 主标题：方正小标宋简体
-\IfFontExistsTF{方正小标宋简体}{
-  \newCJKfontfamily\maintitlefont{方正小标宋简体}
-}{
-  \IfFontExistsTF{方正小标宋_GBK}{
-    \newCJKfontfamily\maintitlefont{方正小标宋_GBK}
-  }{
-    \newCJKfontfamily\maintitlefont{FandolSong-Regular.otf}
-  }
+% ----------------------------------------------------------------------
+% 页眉与页码
+% ----------------------------------------------------------------------
+% 一字线与页码统一装入同一水平盒；数字左右各空一字，线条与数字视觉中线对齐。
+\newcommand{\OfficialPageDash}{%
+  \raisebox{0.75ex}[0pt][0pt]{\rule{1em}{0.45pt}}}
+\newcommand{\OfficialPageNumber}{%
+  \mbox{\OfficialSongLatin\SongFont\fontsize{14bp}{14bp}\selectfont
+    \OfficialPageDash\hspace{0.85em}%
+    \raisebox{0pt}[0pt][0pt]{\thepage}%
+    \hspace{0.85em}\OfficialPageDash}}
+
+\fancypagestyle{official}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+  % 使用完整版心宽度定位页码：奇数页右空一字，偶数页左空一字。
+  % 不再依赖 fancyhdr 的 RO/LE 分栏，确保页码与版心边界严格横向对齐。
+  \fancyfoot[C]{%
+    \ifodd\value{page}%
+      \makebox[\headwidth][r]{\OfficialPageNumber\hspace*{1em}}%
+    \else
+      \makebox[\headwidth][l]{\hspace*{1em}\OfficialPageNumber}%
+    \fi}%
 }
-
-% 一级标题：黑体
-\IfFontExistsTF{黑体}{
-  \newCJKfontfamily\firsttitlefont{黑体}
-}{
-  \newCJKfontfamily\firsttitlefont{FandolHei-Regular.otf}
+\fancypagestyle{officialempty}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
 }
+\pagestyle{official}
 
-% 二级标题：楷体_GB2312
-\IfFontExistsTF{楷体_GB2312}{
-  \newCJKfontfamily\secondtitlefont{楷体_GB2312}
-}{
-  \newCJKfontfamily\secondtitlefont{FandolKai-Regular.otf}
-}
+\newcommand{\HidePageNumber}{\pagestyle{officialempty}\thispagestyle{officialempty}}
+\newcommand{\ShowPageNumber}{\pagestyle{official}\thispagestyle{official}}
 
-% 三级标题：仿宋_GB2312，并允许伪粗体
-\IfFontExistsTF{仿宋_GB2312}{
-  \newCJKfontfamily\thirdtitlefont[
-    AutoFakeBold=2
-  ]{仿宋_GB2312}
-}{
-  \newCJKfontfamily\thirdtitlefont[
-    AutoFakeBold=2
-  ]{FandolFang-Regular.otf}
-}
-
-
-% 页码：宋体
-\IfFontExistsTF{宋体}{
-  \newCJKfontfamily\pagenumberfont{宋体}
-}{
-  \IfFontExistsTF{SimSun}{
-    \newCJKfontfamily\pagenumberfont{SimSun}
-  }{
-    \newCJKfontfamily\pagenumberfont{FandolSong-Regular.otf}
-  }
-}
-
-% =========================================================
-% 正文字号、固定行距、段落格式
-% =========================================================
-
-% 三号字按 16 pt 设置，固定行距 28 pt
-\renewcommand{\normalsize}{\fontsize{16pt}{28pt}\selectfont}
-\AtBeginDocument{\bodyfont\normalsize}
-
-% 正文首行缩进两个汉字，段前段后为 0
-\setlength{\parindent}{2em}
-\setlength{\parskip}{0pt}
-
-% 避免段落首尾出现单行
-\clubpenalty=10000
-\widowpenalty=10000
-\displaywidowpenalty=10000
-
-% =========================================================
-% 主标题
-% 用法：\maintitle{主标题}
-% =========================================================
-
-\newcommand{\maintitle}[1]{%
-  \begin{center}
-    {\maintitlefont\mdseries\fontsize{22pt}{32pt}\selectfont #1}
-  \end{center}
-  \vspace{16pt}
-}
-
-% =========================================================
-% 标题编号与标题格式
-%
-% \section      → 一、一级标题
-% \subsection   → （一）二级标题
-% \subsubsection→ 1. 三级标题
-% =========================================================
-
-\renewcommand{\thesection}{\chinese{section}}
-\renewcommand{\thesubsection}{\chinese{subsection}}
-\renewcommand{\thesubsubsection}{\arabic{subsubsection}}
-
-% 一级标题：黑体、三号、不加粗、28 pt 行距
-\titleformat{\section}[hang]
-  {\firsttitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
-  {\thesection、}
-  {0pt}
-  {}
-
-% 二级标题：楷体_GB2312、三号、不加粗、28 pt 行距
-\titleformat{\subsection}[hang]
-  {\secondtitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
-  {（\thesubsection）}
-  {0pt}
-  {}
-
-% 三级标题：仿宋_GB2312、三号、加粗、28 pt 行距
-\titleformat{\subsubsection}[hang]
-  {\thirdtitlefont\bfseries\fontsize{16pt}{28pt}\selectfont}
-  {\thesubsubsection.}
-  {0.5em}
-  {}
-
-% 标题前后不额外增加段间距，保持 28 pt 行距网格
-\titlespacing{\section}{0pt}{0pt}{0pt}
-\titlespacing{\subsection}{0pt}{0pt}{0pt}
-\titlespacing{\subsubsection}{0pt}{0pt}{0pt}
-
-% =========================================================
-% 页眉和页脚
-%
-% 默认状态：
-%   页眉为空；
-%   自动显示页码；
-%   奇数页页码位于正文版心右侧；
-%   偶数页页码位于正文版心左侧；
-%   页码格式为“— 1 —”“— 2 —”“— 3 —”；
-%   页码字体为宋体，字号为四号（14 pt）。
-%
-% 自定义命令：
-%   \SetHeader{页眉内容}                 % 添加或修改页眉
-%   \ClearHeader                         % 清空页眉
-%   \SetPageNumberFormat{第\thepage 页}  % 修改页码格式
-%   \HidePageNumber                      % 隐藏页码
-%   \ShowPageNumber                      % 恢复页码
-%
-% 页眉基线距纸张上边缘 1.5 cm；
-% 页码基线距纸张下边缘 1.75 cm。
-% =========================================================
-
-% 关闭 ctexart/LaTeX 自带的页眉页脚，由本模板统一绘制
-\pagestyle{empty}
-
-% 页眉默认留空
-\newcommand{\HeaderText}{}
-\newcommand{\SetHeader}[1]{\renewcommand{\HeaderText}{#1}}
-\newcommand{\ClearHeader}{\renewcommand{\HeaderText}{}}
-
-% 页码默认开启，格式为“— 1 —”
-\newif\ifshowpagenumber
-\showpagenumbertrue
-\newcommand{\PageNumberText}{\mbox{—\hspace{0.5em}\thepage\hspace{0.5em}—}}
-\newcommand{\SetPageNumberFormat}[1]{\renewcommand{\PageNumberText}{#1}}
-\newcommand{\HidePageNumber}{\showpagenumberfalse}
-\newcommand{\ShowPageNumber}{\showpagenumbertrue}
-
-\AddToShipoutPictureFG{%
-  % 自定义页眉：默认为空
-  \AtPageUpperLeft{%
-    \put(
-      \LenToUnit{0.5\paperwidth},
-      -\LenToUnit{1.5cm}
-    ){%
-      \makebox(0,0)[c]{%
-        \fontsize{10.5pt}{12pt}\selectfont\HeaderText
-      }%
-    }%
-  }%
-  % 页码：奇数页右对齐，偶数页左对齐
-  \AtPageLowerLeft{%
-    \ifshowpagenumber
-      \ifodd\value{page}
-        \put(
-          \LenToUnit{2.8cm},
-          \LenToUnit{1.75cm}
-        ){%
-          \makebox(\LenToUnit{\textwidth},0)[r]{%
-            \pagenumberfont\fontsize{14pt}{14pt}\selectfont
-            \PageNumberText
-          }%
-        }%
-      \else
-        \put(
-          \LenToUnit{2.8cm},
-          \LenToUnit{1.75cm}
-        ){%
-          \makebox(\LenToUnit{\textwidth},0)[l]{%
-            \pagenumberfont\fontsize{14pt}{14pt}\selectfont
-            \PageNumberText
-          }%
-        }%
-      \fi
-    \fi
-  }%
-}
-
-% =========================================================
-% 可选公文式目录
-%
-% 使用方法：
-%   在 \begin{document} 后、正文主标题前加入：
-%       \MakeOfficialTOC
-%
-% 若不加入该命令，则不会生成目录。
-%
-% 目录页规则：
-%   1. 目录位于本文件第一页；
-%   2. 目录页不显示页码，也不计入正文页码；
-%   3. 正文首页重新从“— 1 —”开始编号；
-%   4. 目录列出一级、二级和三级标题；
-%   5. 新增或修改标题后，需要编译两次，或直接使用 latexmk。
-% =========================================================
-
-% 目录标题：方正小标宋简体、二号、32 pt 行距、居中
-\newcommand{\OfficialTOCTitle}{%
-  \begin{center}
-    {\maintitlefont\mdseries\fontsize{22pt}{32pt}\selectfont
-      目\hspace{1em}录}
-  \end{center}
-  \vspace{16pt}
-}
-
-% 目录最多显示三级标题
+% ----------------------------------------------------------------------
+% 正文层级标题
+% 一级：三号黑体；二级：三号楷体；三级、四级：三号仿宋
+% ----------------------------------------------------------------------
+\setcounter{secnumdepth}{3}
 \setcounter{tocdepth}{3}
 
-% 一级目录：黑体、三号，顶格
-\titlecontents{section}
-  [0pt]
-  {\firsttitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
-  {\contentslabel[\thecontentslabel、]{2.5em}}
-  {}
-  {\bodyfont\mdseries\titlerule*[0.5pc]{.}\contentspage}
+\renewcommand{\thesection}{\chinese{section}、}
+\renewcommand{\thesubsection}{（\chinese{subsection}）}
+\renewcommand{\thesubsubsection}{\arabic{subsubsection}.}
 
-% 二级目录：楷体_GB2312、三号，缩进两个汉字
+\titleformat{\section}[hang]
+  {\HeiFont\OfficialThreeFont}
+  {\thesection}{0pt}{}
+% 不使用带星号的 \titlespacing*：保证标题后的首个正文自然段仍首行缩进二字。
+\titlespacing{\section}{0pt}{0pt}{0pt}
+
+\titleformat{\subsection}[hang]
+  {\KaiFont\OfficialThreeFont}
+  {\thesubsection}{0pt}{}
+\titlespacing{\subsection}{0pt}{0pt}{0pt}
+
+\titleformat{\subsubsection}[hang]
+  {\FangSongFont\OfficialThreeFont}
+  {\thesubsubsection}{0.5em}{}
+\titlespacing{\subsubsection}{0pt}{0pt}{0pt}
+
+% 第四层标题命令：\OfficialFourth{标题文字}
+\newcounter{officialfourth}[subsubsection]
+\newcommand{\OfficialFourth}[1]{%
+  \refstepcounter{officialfourth}%
+  \par\noindent（\arabic{officialfourth}）#1\par
+}
+
+% ----------------------------------------------------------------------
+% 可选目录
+% 仅调用 \MakeOfficialTOC 时生成；目录不显示页码且不计入正文页码。
+% ----------------------------------------------------------------------
+\titlecontents{section}
+  [0em]
+  {\HeiFont\OfficialThreeFont}
+  {\contentslabel{3.5em}}
+  {}
+  {\titlerule*[0.5pc]{.}\contentspage}
+
 \titlecontents{subsection}
   [2em]
-  {\secondtitlefont\mdseries\fontsize{16pt}{28pt}\selectfont}
-  {\contentslabel[（\thecontentslabel）]{3.5em}}
+  {\KaiFont\OfficialThreeFont}
+  {\contentslabel{4em}}
   {}
-  {\bodyfont\mdseries\titlerule*[0.5pc]{.}\contentspage}
+  {\titlerule*[0.5pc]{.}\contentspage}
 
-% 三级目录：仿宋_GB2312、三号，缩进四个汉字
 \titlecontents{subsubsection}
   [4em]
-  {\bodyfont\mdseries\fontsize{16pt}{28pt}\selectfont}
-  {\contentslabel[\thecontentslabel.]{2.5em}}
+  {\FangSongFont\OfficialThreeFont}
+  {\contentslabel{3em}}
   {}
-  {\bodyfont\mdseries\titlerule*[0.5pc]{.}\contentspage}
+  {\titlerule*[0.5pc]{.}\contentspage}
 
 \makeatletter
 \newcommand{\MakeOfficialTOC}{%
   \clearpage
-  \begingroup
-    % 目录页临时取消页眉和页码；正文设置不受影响
-    \renewcommand{\HeaderText}{}%
-    \HidePageNumber
-    \pagenumbering{gobble}%
-    \thispagestyle{empty}%
-    \OfficialTOCTitle
-    \@starttoc{toc}%
-    \clearpage
-  \endgroup
-  % 正文从第 1 页重新开始
+  \pagestyle{officialempty}%
+  \pagenumbering{gobble}%
+  \thispagestyle{officialempty}%
+  \begin{center}
+    {\OfficialTitleFont 目\quad 录}
+  \end{center}
+  \vspace{\baselineskip}
+  \@starttoc{toc}%
+  \clearpage
   \pagenumbering{arabic}%
   \setcounter{page}{1}%
+  \pagestyle{official}%
+  \thispagestyle{official}%
 }
 \makeatother
 
-% =========================================================
-% 列表、图片、表格的常用设置
-% =========================================================
+% ----------------------------------------------------------------------
+% 公文元数据
+% ----------------------------------------------------------------------
+\newcommand{\OfficialCopyNo}{}
+\newcommand{\OfficialSecret}{}
+\newcommand{\OfficialUrgency}{}
+\newcommand{\OfficialAuthority}{}
+\newcommand{\OfficialDocNumber}{}
+\newcommand{\OfficialSigner}{}
+\newcommand{\OfficialTitle}{}
+\newcommand{\OfficialRecipient}{}
+\newcommand{\OfficialAgency}{}
+\newcommand{\OfficialDate}{}
 
-\setlist[itemize]{
-  leftmargin=2em,
-  itemsep=0pt,
-  topsep=0pt,
-  parsep=0pt
+\newcommand{\DocCopyNo}[1]{\gdef\OfficialCopyNo{#1}}
+\newcommand{\DocSecret}[1]{\gdef\OfficialSecret{#1}}
+% 推荐命令：自动在密级和保密期限之间插入规范的黑色实心五角星。
+% 示例：\DocSecretPeriod{机密}{1年}
+\newcommand{\DocSecretPeriod}[2]{%
+  \gdef\OfficialSecret{#1\OfficialSecretStar#2}}
+\newcommand{\DocUrgency}[1]{\gdef\OfficialUrgency{#1}}
+\newcommand{\DocAuthority}[1]{\gdef\OfficialAuthority{#1}}
+\newcommand{\DocNumber}[1]{\gdef\OfficialDocNumber{#1}}
+\newcommand{\DocSigner}[1]{\gdef\OfficialSigner{#1}}
+\newcommand{\DocTitle}[1]{\gdef\OfficialTitle{#1}}
+\newcommand{\DocRecipient}[1]{\gdef\OfficialRecipient{#1}}
+\newcommand{\DocAgency}[1]{\gdef\OfficialAgency{#1}}
+\newcommand{\DocDate}[1]{\gdef\OfficialDate{#1}}
+
+\definecolor{officialred}{RGB}{255,0,0}
+
+% ----------------------------------------------------------------------
+% 可选版头
+% 仅控制份号、密级、紧急程度、发文机关标志、发文字号、签发人和红色分隔线。
+% 调用：\MakeOfficialFrontMatter
+% ----------------------------------------------------------------------
+\newif\ifOfficialFrontMatterMade
+\OfficialFrontMatterMadefalse
+
+\newcommand{\MakeOfficialFrontMatter}{%
+  \global\OfficialFrontMatterMadetrue
+  \thispagestyle{official}%
+  % 版心左上角要素：份号第一行，密级和保密期限第二行，紧急程度随后。
+  % 三者均为三号黑体，顶格编排；未设置的要素不占空行。
+  \noindent
+  \begin{minipage}[t][0pt][t]{\textwidth}
+    \OfficialTopElementFont
+    \setlength{\parindent}{0pt}%
+    \setlength{\parskip}{0pt}%
+    \ifdefempty{\OfficialCopyNo}{}{\noindent\OfficialCopyNo\par}%
+    \ifdefempty{\OfficialSecret}{}{\noindent\OfficialSecret\par}%
+    \ifdefempty{\OfficialUrgency}{}{\noindent\OfficialUrgency\par}%
+  \end{minipage}%
+
+  % 发文机关标志上边缘距版心上边缘约 35 mm
+  \vspace*{35mm}%
+  \begin{center}
+    {\color{officialred}\OfficialMarkFont \OfficialAuthority\par}
+  \end{center}
+
+  % 发文机关标志下空二行，编排发文字号或签发人
+  \vspace{1.2\baselineskip}%
+  \ifdefempty{\OfficialSigner}
+    {\begin{center}\FangSongFont\OfficialThreeFont\OfficialDocNumber\end{center}}
+    {\noindent
+     \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}l r@{}}
+       \FangSongFont\OfficialThreeFont\OfficialDocNumber &
+       \FangSongFont\OfficialThreeFont 签发人：{\KaiFont\OfficialSigner}
+     \end{tabular*}\par}
+
+  % 发文字号之下 4 mm 处红色分隔线
+  \vspace{4mm}%
+  \noindent{\color{officialred}\rule{\textwidth}{1pt}}\par
 }
 
-\setlist[enumerate]{
-  leftmargin=2em,
-  itemsep=0pt,
-  topsep=0pt,
-  parsep=0pt
+% ----------------------------------------------------------------------
+% 公文标题与主送机关
+% 与版头相互独立。无论是否调用 \MakeOfficialFrontMatter，均可调用本命令。
+% 调用：\MakeOfficialTitleBlock
+% ----------------------------------------------------------------------
+\newcommand{\MakeOfficialTitleBlock}{%
+  % 有版头时：红色分隔线下空二行编排标题；无版头时：从当前版心位置直接编排。
+  \ifOfficialFrontMatterMade
+    \vspace{1.3\baselineskip}%
+  \fi
+  \begin{center}
+    {\OfficialTitleFont \OfficialTitle\par}
+  \end{center}
+
+  % 标题下空一行编排主送机关；主送机关顶格。
+  \ifdefempty{\OfficialRecipient}{}
+    {\vspace{0.5\baselineskip}%
+     \noindent\FangSongFont\OfficialThreeFont\OfficialRecipient：\par}
 }
 
-% 图片默认最大宽度为正文宽度
-\setkeys{Gin}{width=\linewidth,keepaspectratio}
+% ----------------------------------------------------------------------
+% 附件说明、落款、附注
+% ----------------------------------------------------------------------
+% 多附件推荐写法：
+% \begin{OfficialAttachmentList}
+%   \OfficialAttachmentItem{公文格式检查表}
+%   \OfficialAttachmentItem{公文排版常见问题说明}
+% \end{OfficialAttachmentList}
+%
+% “附件：”左空二字；第一项与“附件：”处于同一基线；
+% 各附件序号在同一竖线上；附件名称换行时与名称首字对齐。
+\newcounter{officialattachment}
+\newif\ifOfficialFirstAttachment
 
-% =========================================================
+\newenvironment{OfficialAttachmentList}{%
+  \par\vspace{\baselineskip}%
+  \setcounter{officialattachment}{0}%
+  \OfficialFirstAttachmenttrue
+  \begingroup
+  \setlength{\parindent}{0pt}%
+  \setlength{\parskip}{0pt}%
+}{%
+  \par\endgroup
+}
+
+\newcommand{\OfficialAttachmentItem}[1]{%
+  \stepcounter{officialattachment}%
+  \ifOfficialFirstAttachment
+    \par\noindent\hspace*{2em}%
+    \makebox[3em][l]{附件：}%
+    \OfficialFirstAttachmentfalse
+  \else
+    \par\noindent\hspace*{5em}%
+  \fi
+  % 序号后仅保留约一个半角空格，避免序号与附件名称间距过宽。
+  % 1.25em 可容纳一位序号及句点；如附件达到两位数，可改为 1.75em。
+  \makebox[1.25em][l]{\arabic{officialattachment}.}%
+  \parbox[t]{\dimexpr\textwidth-6.25em\relax}{%
+    \setlength{\parindent}{0pt}%
+    \strut #1\strut}%
+}
+
+% 兼容旧写法；适合附件名称较短、不需要自动换行的情况：
+% \OfficialAttachments{1. 公文格式检查表\\2. 公文排版常见问题说明}
+\newcommand{\OfficialAttachments}[1]{%
+  \par\vspace{\baselineskip}%
+  \noindent\hspace*{2em}附件：%
+  \begin{tabular}[t]{@{}l@{}}#1\end{tabular}%
+  \par
+}
+
+% 单个附件的简写命令。
+\newcommand{\OfficialAttachment}[1]{%
+  \par\vspace{\baselineskip}%
+  \noindent\hspace*{2em}附件：#1\par
+}
+
+% 发文机关署名和成文日期。
+\newcommand{\MakeOfficialSignature}{%
+  \par\vspace{2\baselineskip}%
+  \noindent\hfill
+  \begin{minipage}{16em}
+    \centering
+    \OfficialAgency\par
+    \OfficialDate\par
+  \end{minipage}%
+  \hspace*{4em}\par
+}
+
+% 附注。
+\newcommand{\OfficialNote}[1]{%
+  \par\vspace{\baselineskip}%
+  \noindent\hspace*{2em}（#1）\par
+}
+
+% ----------------------------------------------------------------------
+% 附件首页标题
+% 用法：\MakeOfficialAttachmentTitle{1}{附件标题}
+% ----------------------------------------------------------------------
+\NewDocumentCommand{\MakeOfficialAttachmentTitle}{m m}{%
+  \clearpage
+  \thispagestyle{official}%
+  \noindent{\HeiFont\OfficialThreeFont 附件#1}\par
+  \vspace{\baselineskip}%
+  \begin{center}
+    {\OfficialTitleFont #2\par}
+  \end{center}
+  \vspace{\baselineskip}%
+}
+
+% ----------------------------------------------------------------------
+% 版记
+% 用法：\MakeOfficialImprint{抄送机关}{印发机关}{2026年7月18日印发}
+% 第一个参数为空时，不显示“抄送”行。
+% ----------------------------------------------------------------------
+\newcommand{\MakeOfficialImprint}[3]{%
+  \par\vfill
+  \begingroup
+  \SongFont\OfficialFourFont
+  \setlength{\parindent}{0pt}%
+  \noindent\rule{\textwidth}{1pt}\par
+  \ifstrempty{#1}{}{%
+    \noindent\hspace*{1em}抄送：#1。\par
+    \noindent\rule{\textwidth}{0.6pt}\par
+  }%
+  \noindent
+  \begin{tabular*}{\textwidth}{@{\hspace{1em}}l@{\extracolsep{\fill}}r@{\hspace{1em}}}
+    #2 & #3
+  \end{tabular*}\par
+  \noindent\rule{\textwidth}{1pt}\par
+  \endgroup
+}
+
+% ----------------------------------------------------------------------
+% 用户信息区：按实际文件修改
+% ----------------------------------------------------------------------
+\DocCopyNo{000001}                         % 份号：一般为 6 位 3 号黑体阿拉伯数字，如 000001
+%\DocSecret{}                         % 自定义密级文字；推荐改用下一行的 \DocSecretPeriod
+\DocSecretPeriod{机密}{1年}         % 自动生成“机密★1年”，星号不会显示为方框
+\DocUrgency{特急}                        % 紧急程度：3 号黑体，如“特急”或“加急”
+\DocAuthority{××市人民政府文件}
+\DocNumber{×政发〔2026〕1号}
+\DocSigner{}                         % 上行文示例：张三；普通下行文留空
+\DocTitle{关于进一步规范党政机关公文格式的通知}
+\DocRecipient{各区人民政府，市政府各部门，各有关单位}
+\DocAgency{××市人民政府}
+\DocDate{2026年7月18日}
+
+% ======================================================================
 % 正文开始
-% =========================================================
-
+% ======================================================================
 \begin{document}
 
-% 可选目录：取消下一行开头的百分号，即可在正文前生成公文式目录。
-% 不需要目录时，保持该行注释即可。
- \MakeOfficialTOC
+% 可选目录：需要目录时取消下一行注释；不需要目录时保持注释。
+% \MakeOfficialTOC
 
-% 默认：无页眉；页码自动显示为“— 1 —”“— 2 —”……
-% 奇数页页码位于正文版心右侧，偶数页位于正文版心左侧。
-%
-% 需要页眉时取消注释：
-% \SetHeader{这里填写页眉内容}
-%
-% 修改页码格式示例：
-% \SetPageNumberFormat{第\thepage 页}
-%
-% 临时隐藏或恢复页码：
-% \HidePageNumber
-% \ShowPageNumber
+% 可选版头：需要版头时保留下一行；不需要版头时将其注释。
+\MakeOfficialFrontMatter
 
+% 公文标题和主送机关始终独立显示，不受版头开关影响。
+\MakeOfficialTitleBlock
 
-\maintitle{主标题}
+为进一步规范党政机关公文排版，提高公文处理工作的规范化、标准化水平，现就有关事项通知如下。
 
-\section{一级标题}
+\section{总体要求}
+公文排版应当做到版面整洁、结构清晰、字体规范、要素完整。正文每个自然段左空二字，回行顶格，数字和西文字母使用 Times New Roman 字体。
 
-正文中文采用仿宋\_GB2312，数字和英文字母采用 Times New Roman，三号字，不加粗，固定行距为 28 磅。
-包括各级标题后的第一段在内，正文均默认首行缩进两个汉字。较长的正文会在 A4 版心范围内自动换行，
-不会越过右侧页边距。
+\subsection{页面设置}
+公文用纸采用 A4 型纸，版心尺寸为 156~mm×225~mm。公文用纸天头为 37~mm，订口为 28~mm，并根据双面印刷要求设置奇偶页页码位置。
 
-\subsection{二级标题}
+\subsubsection{字体字号}
+正文一般使用三号仿宋体字；一级标题使用三号黑体字，二级标题使用三号楷体字，三级和四级标题使用三号仿宋体字。
 
-正文内容。
+\OfficialFourth{页码格式}
+页码使用四号半角宋体阿拉伯数字，数字左右各放置一条一字线；单页码居右空一字，双页码居左空一字。
 
-\subsubsection{三级标题}
+\section{执行要求}
+各单位可在本模板基础上替换发文机关标志、发文字号、标题、主送机关、正文、附件说明、发文机关署名、成文日期和版记内容。
 
-正文内容。
+% 附件说明示例；无附件时删除或注释
+\begin{OfficialAttachmentList}
+  \OfficialAttachmentItem{公文格式检查表}
+  \OfficialAttachmentItem{公文排版常见问题说明}
+\end{OfficialAttachmentList}
 
-% 强制分页
-\newpage
+% 发文机关署名和成文日期
+\MakeOfficialSignature
 
-\section{第二页标题}
+% 附注示例；无附注时删除或注释
+\OfficialNote{此件公开发布}
 
-正文内容。该页为偶数页，页码位于正文版心左侧。
-
-\newpage
-
-\section{第三页标题}
-
-正文内容。该页为奇数页，页码位于正文版心右侧。
+% 版记示例
+\MakeOfficialImprint{各有关单位}{××市人民政府办公室}{2026年7月18日印发}
 
 \end{document}
