@@ -54,14 +54,14 @@ macOS 可使用 MacTeX，Linux 可使用 TeX Live。
 在模板所在目录执行：
 
 ```bash
-xelatex GB_T_9704_2012_Official_Document_Template_v7.tex
+xelatex main.tex
 ```
 
 通常建议连续编译两次：
 
 ```bash
-xelatex GB_T_9704_2012_Official_Document_Template_v7.tex
-xelatex GB_T_9704_2012_Official_Document_Template_v7.tex
+xelatex main.tex
+xelatex main.tex
 ```
 
 使用目录时必须至少编译两次，才能正确生成目录及页码。
