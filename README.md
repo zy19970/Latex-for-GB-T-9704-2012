@@ -91,7 +91,7 @@ xelatex GB_T_9704_2012_Official_Document_Template_v7.tex
 
 ### 3.3 在 Release 中下载字体
 
-本模板所使用的字体可在项目的 **Releases（发行版）** 页面下载。进入对应版本的 Release 后，在“Assets”或“附件”区域下载字体资源包并解压安装。
+本模板所使用的字体可在项目的 **Releases（发行版）** [页面](https://github.com/zy19970/Latex-for-GB-T-9704-2012/releases)下载。进入对应版本的 Release 后，在“Assets”或“附件”区域下载字体资源包并解压安装。
 
 字体资源包包括模板优先调用或用于兼容回退的中文字体与西文字体。安装完成后，应关闭并重新打开 TeX 编辑器、命令行窗口或集成开发环境，再使用 XeLaTeX 重新编译。
 
