@@ -842,11 +842,6 @@ project/
 
 ## 21. 版本说明
 
-当前说明对应：
-
-```text
-GB_T_9704_2012_Official_Document_Template_v7.tex
-```
 
 v7 的主要调整包括：
 
