@@ -616,14 +616,6 @@ Windows 中可选中字体文件，右键选择“安装”或“为所有用户
 % \MakeOfficialTOC
 ```
 
-### 15.3 编译次数
-
-启用目录后，至少连续编译两次：
-
-```bash
-xelatex GB_T_9704_2012_Official_Document_Template_v7.tex
-xelatex GB_T_9704_2012_Official_Document_Template_v7.tex
-```
 
 ---
 
